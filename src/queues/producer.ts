@@ -6,7 +6,8 @@ export class Producer {
 
     private static async initialize(): Promise<void> {
         if (!this.connection) {
-            this.connection = await amqp.connect('amqp://localhost');
+            const rabbitMqUrl = process.env.RABBITMQ_URL || 'amqp://localhost';
+            this.connection = await amqp.connect(rabbitMqUrl);
         }
         
         if (!this.channel && this.connection) {
@@ -39,3 +40,5 @@ export class Producer {
         }
     }
 }
+
+Producer.publishMessage('test-queue', { message: 'Hello World' });
