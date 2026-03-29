@@ -6,8 +6,8 @@ import { Producer } from '../queues/producer';
 export class OrderController {
     private orderService: OrderService;
 
-    constructor() {
-        this.orderService = new OrderService();
+    constructor(orderService: OrderService) {
+        this.orderService = orderService;
     }
 
     public createOrder = async (req: Request<unknown, unknown, OrderRequest>, res: Response): Promise<void> => {
