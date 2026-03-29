@@ -17,7 +17,8 @@ export class Consumer {
 
     public static async consumeMessages(
         queueName: string, 
-        messageHandler: (message: unknown) => Promise<void>
+        messageHandler: (message: unknown) => Promise<void>,
+        limit: number = 5
     ): Promise<void> {
         try {
             await this.initialize();
@@ -30,7 +31,10 @@ export class Consumer {
                 durable: true
             });
 
-            console.log(`[*] Actively listening for messages in queue: '${queueName}'`);
+            // Set the prefetch limit (e.g. limit 5)
+            await this.channel.prefetch(limit);
+
+            console.log(`[*] Actively listening for messages in queue: '${queueName}' (limit: ${limit})`);
 
             await this.channel.consume(queueName, async (msg: amqp.ConsumeMessage | null) => {
                 if (msg !== null) {
@@ -56,6 +60,19 @@ export class Consumer {
     }
 }
 
-Consumer.consumeMessages('test-queue', async (message) => {
-    console.log('Received message:', message);      
-});
+// Ensure OrderService can be imported
+import { OrderService } from '../services/OrderService';
+import { OrderRequest } from '../models/Order';
+
+const orderService = new OrderService();
+
+Consumer.consumeMessages('order-queue', async (message) => {
+    const orderData = message as OrderRequest;
+    console.log('[*] Processing order from queue:', orderData);
+    try {
+        await orderService.createOrder(orderData);
+        console.log('[*] Order created successfully via queue');
+    } catch (error) {
+        console.error('[!] Failed to create order from queue:', error);
+    }
+}, 5);

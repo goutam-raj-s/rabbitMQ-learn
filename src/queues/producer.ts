@@ -24,13 +24,13 @@ export class Producer {
             }
 
             await this.channel.assertQueue(queueName, {
-                durable: true
-            });
+                durable: true //queue survives restart
+            });  // queue itself is stored into disk rather than ram       
 
             const payload = Buffer.from(JSON.stringify(message));
 
             this.channel.sendToQueue(queueName, payload, {
-                persistent: true
+                persistent: true //message survives restart
             });
 
             console.log(`[x] Published message properly to queue: '${queueName}'`);
@@ -40,5 +40,3 @@ export class Producer {
         }
     }
 }
-
-Producer.publishMessage('test-queue', { message: 'Hello World' });

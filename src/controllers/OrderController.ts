@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { OrderService } from '../services/OrderService';
 import { OrderRequest } from '../models/Order';
+import { Producer } from '../queues/producer';
 
 export class OrderController {
     private orderService: OrderService;
@@ -18,16 +19,15 @@ export class OrderController {
                 return;
             }
 
-            const storedOrder = await this.orderService.createOrder({ item, quantity, price });
-            res.status(201).json(storedOrder);
-        } catch (error) {
-            const err = error as Error;
-            
-            if (err.message === 'Quantity and price must be greater than zero.') {
-                res.status(400).json({ error: err.message });
+            if (quantity <= 0 || price <= 0) {
+                res.status(400).json({ error: 'Quantity and price must be greater than zero.' });
                 return;
             }
 
+            await Producer.publishMessage('order-queue', { item, quantity, price });
+            res.status(202).json({ message: 'Order submitted to queue for processing' });
+        } catch (error) {
+            const err = error as Error;
             res.status(500).json({ error: err.message });
         }
     };
