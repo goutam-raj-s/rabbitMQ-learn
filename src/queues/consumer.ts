@@ -35,17 +35,24 @@ export class Consumer {
 
 // Ensure OrderService can be imported
 import { OrderService } from '../services/OrderService';
-import { OrderRequest } from '../models/Order';
+import { Order } from '../models/Order';
 
 const orderService = new OrderService();
 
 Consumer.consumeMessages('order-queue', async (message) => {
-    const orderData = message as OrderRequest;
-    console.log('[*] Processing order from queue:', orderData);
+    const orderData = message as Order;
+    console.log(`[*] Processing order #${orderData.id} from queue...`);
+    
     try {
-        await orderService.createOrder(orderData);
-        console.log('[*] Order created successfully via queue');
+        // Simulate some async processing like payment or inventory check
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Mark the order as completed
+        await orderService.updateOrderStatus(orderData.id, 'COMPLETED');
+        console.log(`[*] Order #${orderData.id} marked as COMPLETED.`);
     } catch (error) {
-        console.error('[!] Failed to create order from queue:', error);
+        console.error(`[!] Failed to process order #${orderData.id}:`, error);
+        // If it fails, mark as FAILED
+        await orderService.updateOrderStatus(orderData.id, 'FAILED');
     }
 }, 5);

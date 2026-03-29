@@ -24,8 +24,17 @@ export class OrderController {
                 return;
             }
 
-            await Producer.publishMessage('order-queue', { item, quantity, price });
-            res.status(202).json({ message: 'Order submitted to queue for processing' });
+            // 1. Create the order synchronously in the DB with status PENDING
+            const storedOrder = await this.orderService.createOrder({ item, quantity, price });
+
+            // 2. Publish to queue for async processing (e.g., payment, inventory)
+            await Producer.publishMessage('order-queue', storedOrder);
+
+            // 3. Return the ID and PENDING status to the user immediately
+            res.status(202).json({ 
+                message: 'Order submitted to queue for processing',
+                order: storedOrder
+            });
         } catch (error) {
             const err = error as Error;
             res.status(500).json({ error: err.message });

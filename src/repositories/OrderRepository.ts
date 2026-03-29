@@ -5,16 +5,25 @@ export class OrderRepository {
     public async create(orderData: OrderRequest): Promise<Order> {
         const db = await getDbConnection();
         const result = await db.run(
-            `INSERT INTO orders (item, quantity, price) VALUES (?, ?, ?)`,
-            [orderData.item, orderData.quantity, orderData.price]
+            `INSERT INTO orders (item, quantity, price, status) VALUES (?, ?, ?, ?)`,
+            [orderData.item, orderData.quantity, orderData.price, 'PENDING']
         );
         
         return {
             id: result.lastID as number,
             item: orderData.item,
             quantity: orderData.quantity,
-            price: orderData.price
+            price: orderData.price,
+            status: 'PENDING'
         };
+    }
+
+    public async updateStatus(id: number, status: string): Promise<void> {
+        const db = await getDbConnection();
+        await db.run(
+            `UPDATE orders SET status = ? WHERE id = ?`,
+            [status, id]
+        );
     }
 
     public async findById(id: number): Promise<Order | null> {

@@ -21,9 +21,15 @@ class DatabaseConnection {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 item TEXT NOT NULL,
                 quantity INTEGER NOT NULL,
-                price REAL NOT NULL
+                price REAL NOT NULL,
+                status TEXT DEFAULT 'PENDING'
             )`
         );
+        try {
+            await db.run(`ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'PENDING'`);
+        } catch (e) {
+            // It's expected to throw if the column already exists
+        }
         console.log('Database and orders table are ready.');
     }
 }

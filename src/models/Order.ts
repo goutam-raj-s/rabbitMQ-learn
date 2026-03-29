@@ -6,4 +6,5 @@ export interface OrderRequest {
 
 export interface Order extends OrderRequest {
     id: number;
+    status?: string;
 }

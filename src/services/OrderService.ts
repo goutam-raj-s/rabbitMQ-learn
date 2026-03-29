@@ -15,6 +15,10 @@ export class OrderService {
         return await this.orderRepository.create(orderData);
     }
 
+    public async updateOrderStatus(id: number, status: string): Promise<void> {
+        return await this.orderRepository.updateStatus(id, status);
+    }
+
     public async getOrder(id: number): Promise<Order | null> {
         return await this.orderRepository.findById(id);
     }
