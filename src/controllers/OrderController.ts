@@ -24,13 +24,10 @@ export class OrderController {
                 return;
             }
 
-            // 1. Create the order synchronously in the DB with status PENDING
+            // 1. Create the order synchronously in the DB and put it in queue via Service
             const storedOrder = await this.orderService.createOrder({ item, quantity, price });
 
-            // 2. Publish to queue for async processing (e.g., payment, inventory)
-            await Producer.publishMessage('order-queue', storedOrder);
-
-            // 3. Return the ID and PENDING status to the user immediately
+            // 2. Return the ID and PENDING status to the user immediately
             res.status(202).json({ 
                 message: 'Order submitted to queue for processing',
                 order: storedOrder

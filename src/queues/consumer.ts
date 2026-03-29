@@ -36,8 +36,10 @@ export class Consumer {
 // Ensure OrderService can be imported
 import { OrderService } from '../services/OrderService';
 import { Order } from '../models/Order';
+import { RabbitMQProducer } from './RabbitMQProducer';
 
-const orderService = new OrderService();
+const messageQueue = new RabbitMQProducer();
+const orderService = new OrderService(messageQueue);
 
 Consumer.consumeMessages('order-queue', async (message) => {
     const orderData = message as Order;
